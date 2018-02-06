@@ -56,11 +56,28 @@ type Branch = [(Int,Int)]
 -- The current location of the robot is the head of the input branch.
 -- Your function should return an empty list if the input search branch is empty.
 -- This implementation of next function does not backtrace branches.
-next::Branch-> [Branch]
-next branch = undefined
+next:: Branch -> [Branch]
+next [] = []
+next branch = map (\node -> node : branch) [
+    node
+    | node <- possibilities
+    , not $ elem node branch
+    , is_in_grid node
+    ]
+    where
+        (x, y) = head branch
+        possibilities = [
+                (x, y+1),
+                (x, y-1),
+                (x+1, y),
+                (x-1, y)
+            ]
+
+is_in_grid :: Node -> Bool
+is_in_grid (x, y) = and [(x > 0), (y > 0), (x < 7), (y < 7)]
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
-checkArrival::Node-> Node-> Bool
+checkArrival:: Node -> Node -> Bool
 checkArrival destination curNode = undefined
 
 -- Section 3 Uniformed Search
