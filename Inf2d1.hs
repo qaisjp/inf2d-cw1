@@ -98,7 +98,7 @@ iterDeepSearch destination next initialNode d = undefined
 -- Manhattan distance heuristic
 -- This function should return the manhattan distance between the current position and the destination position.
 manhattan::Node-> Node-> Int
-manhattan position destination = undefined
+manhattan (x, y) (x', y') = (abs $ x - x') + (abs $ y - y')
 
 -- | Best-First Search
 -- The bestFirstSearch function uses the checkArrival function to check whether a node is a destination position,
