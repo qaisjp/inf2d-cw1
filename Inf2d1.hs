@@ -78,7 +78,7 @@ is_in_grid (x, y) = and [(x > 0), (y > 0), (x < 7), (y < 7)]
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
 checkArrival:: Node -> Node -> Bool
-checkArrival destination curNode = undefined
+checkArrival destination curNode = destination == curNode
 
 -- Section 3 Uniformed Search
 -- | Breadth-First Search
