@@ -74,7 +74,7 @@ next branch = map (\node -> node : branch) [
             ]
 
 is_in_grid :: Node -> Bool
-is_in_grid (x, y) = and [(x > 0), (y > 0), (x < 7), (y < 7)]
+is_in_grid (x, y) = and [(x >= 1), (y >= 1), (x <= gridWidth_search), (y <= gridLength_search)]
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
 checkArrival:: Node -> Node -> Bool
