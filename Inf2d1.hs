@@ -8,6 +8,7 @@ module Inf2d1 where
 import Data.List (sortBy)
 import Debug.Trace
 import ConnectFour
+import Debug.Trace -- REMOVE ME REMOVE ME REMOVE ME REMOVE ME REMOVE ME REMOVE ME 
 
 gridLength_search::Int
 gridLength_search = 6
@@ -86,7 +87,23 @@ checkArrival destination curNode = destination == curNode
 -- and the checkArrival function to check whether a node is a destination position.
 -- The function should search nodes using a breadth first search order.
 breadthFirstSearch::Node-> (Branch-> [Branch])-> [Branch]->[Node]-> Maybe Branch
-breadthFirstSearch destination next branches exploredList = undefined
+breadthFirstSearch destination next [] exploredList = Nothing
+breadthFirstSearch destination next branches exploredList
+    | not $ null current = Just (head current) -- if heads of any existing branches are at destination, return head of said branch
+    | all (`elem` exploredList) heads = Nothing -- explored them all, return nothing
+    | otherwise = breadthFirstSearch destination next nextBranches (heads ++ exploredList) -- go another level down if not explored all
+    where
+        nextBranches = concat [next branch | branch <- branches]
+
+
+        heads :: [Node]
+        heads = trace ('\n':show nextBranches) (map head nextBranches)
+
+        current :: [Branch]
+        current = filter (\b -> checkArrival destination (head b)) branches
+
+        result :: [Branch]
+        result = filter (\b -> checkArrival destination (head b)) nextBranches
 
 
 -- | Depth-First Search
