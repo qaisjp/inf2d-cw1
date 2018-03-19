@@ -8,7 +8,6 @@ module Inf2d1 where
 import Data.List (sortBy)
 import Debug.Trace
 import ConnectFour
-import Debug.Trace -- REMOVE ME REMOVE ME REMOVE ME REMOVE ME REMOVE ME REMOVE ME 
 
 gridLength_search::Int
 gridLength_search = 6
@@ -89,15 +88,14 @@ checkArrival destination curNode = destination == curNode
 breadthFirstSearch::Node-> (Branch-> [Branch])-> [Branch]->[Node]-> Maybe Branch
 breadthFirstSearch destination next [] exploredList = Nothing
 breadthFirstSearch destination next branches exploredList
-    | not $ null current = Just (head current) -- if heads of any existing branches are at destination, return head of said branch
+    | not $ null current = Just (head current) -- if heads of any existing branches are at destination, return one of the branches
     | all (`elem` exploredList) heads = Nothing -- explored them all, return nothing
     | otherwise = breadthFirstSearch destination next nextBranches (heads ++ exploredList) -- go another level down if not explored all
     where
         nextBranches = concat [next branch | branch <- branches]
 
-
         heads :: [Node]
-        heads = trace ('\n':show nextBranches) (map head nextBranches)
+        heads = map head nextBranches
 
         current :: [Branch]
         current = filter (\b -> checkArrival destination (head b)) branches
@@ -111,21 +109,70 @@ breadthFirstSearch destination next branches exploredList
 -- except it searches nodes in a depth first search order.
 
 depthFirstSearch::Node-> (Branch-> [Branch])-> [Branch]-> [Node]-> Maybe Branch
-depthFirstSearch destination next  branches exploredList = undefined
+depthFirstSearch destination next  branches exploredList
+    | not $ all (`elem` exploredList) heads = depthFirstSearch destination next nextBranches (heads ++ exploredList) -- go another level down if not explored all
+    | not $ null current = Just (head current) -- if heads of any existing branches are at destination, return one of the branches
+    | otherwise = Nothing
+    where
+        nextBranches = concat [next branch | branch <- branches]
+
+        heads :: [Node]
+        heads = map head nextBranches
+
+        current :: [Branch]
+        current = filter (\b -> checkArrival destination (head b)) branches
+
+        result :: [Branch]
+        result = filter (\b -> checkArrival destination (head b)) nextBranches
 
 -- | Depth-Limited Search
 -- The depthLimitedSearch function is similiar to the depthFirstSearch function,
 -- except its search is limited to a pre-determined depth, d, in the search tree..
 
 depthLimitedSearch::Node-> (Branch-> [Branch])-> [Branch]-> Int-> [Node]-> Maybe Branch
-depthLimitedSearch destination next  branches d exploredList = undefined
+depthLimitedSearch destination next  branches d exploredList
+    | (&&) (d > 0) $ not $ all (`elem` exploredList) heads = depthLimitedSearch destination next nextBranches (d-1) (heads ++ exploredList) -- go another level down if not explored all
+    | not $ null current = Just (head current) -- if heads of any existing branches are at destination, return one of the branches
+    | otherwise = Nothing
+    where
+        nextBranches = concat [next branch | branch <- branches]
+
+        heads :: [Node]
+        heads = map head nextBranches
+
+        current :: [Branch]
+        current = filter (\b -> checkArrival destination (head b)) branches
+
+        result :: [Branch]
+        result = filter (\b -> checkArrival destination (head b)) nextBranches
 
 -- | Iterative-deepening search
 -- The iterDeepSearch function should initially search nodes using depth-first to depth d,
 -- and should increase the depth by 1 if search is unsuccessful.
 -- This process should be continued until a solution is found.
 iterDeepSearch:: Node-> (Branch-> [Branch])-> Node-> Int-> Maybe Branch
-iterDeepSearch destination next initialNode d = undefined
+iterDeepSearch dest next initial d
+    | result == Nothing = iterDeepSearch dest next initial (d+1)
+    | otherwise = result
+    where result = depthLimitedSearch dest next [[initial]] d []
+-- iterDeepSearch destination next initialNode d = search [[initialNode]] d []
+--     where
+--         search branches d exploredList
+--             | (&&) (d > 0) $ not $ all (`elem` exploredList) heads = search nextBranches (d-1) (heads ++ exploredList) -- go another level down if not explored all
+--             | not $ null current = Just (head current) -- if heads of any existing branches are at destination, return one of the branches
+--             | not $ all (`elem` exploredList) heads = search nextBranches 1 (heads ++ exploredList)
+--             | otherwise = Nothing
+--             where
+--                 nextBranches = concat [next branch | branch <- branches]
+
+--                 heads :: [Node]
+--                 heads = map head nextBranches
+
+--                 current :: [Branch]
+--                 current = filter (\b -> checkArrival destination (head b)) branches
+
+--                 result :: [Branch]
+--                 result = filter (\b -> checkArrival destination (head b)) nextBranches
 
 -- | Section 4: Informed search
 
