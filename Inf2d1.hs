@@ -60,14 +60,17 @@ type Branch = [(Int,Int)]
 -- This implementation of next function does not backtrace branches.
 next:: Branch -> [Branch]
 next [] = []
-next branch = map (\node -> node : branch) [
-    node
-    | node <- possibilities
-    , not $ elem node branch
-    , is_in_grid node
+next branch = [
+    node:branch -- attach each poss to the branch
+    | node <- possibilities -- node drawn from poss
+    , not $ elem node branch -- making sure node isn't in the branch
+    , is_in_grid node -- making sure node is in the grid
     ]
     where
+        -- coords of the head of the branch
         (x, y) = head branch
+
+        -- possibilities
         possibilities = [
                 (x, y+1),
                 (x, y-1),
@@ -77,7 +80,7 @@ next branch = map (\node -> node : branch) [
 
 -- |The checkArrival function should return true if the current location of the robot is the destination, and false otherwise.
 checkArrival:: Node -> Node -> Bool
-checkArrival destination curNode = destination == curNode
+checkArrival destination curNode = destination == curNode -- equal comparison
 
 -- Section 3 Uniformed Search
 -- | Breadth-First Search
@@ -92,13 +95,13 @@ breadthFirstSearch destination next branches exploredList
     | all (`elem` exploredList) heads = Nothing -- explored them all, return nothing
     | otherwise = breadthFirstSearch destination next nextBranches (heads ++ exploredList) -- go another level down if not explored all
     where
-        nextBranches = concat [next branch | branch <- branches]
+        nextBranches = concat [next branch | branch <- branches] -- all the possible nexts for each branch
 
         heads :: [Node]
-        heads = map head nextBranches
+        heads = map head nextBranches -- heads of all the _nextBranches_
 
         current :: [Branch]
-        current = filter (\b -> checkArrival destination (head b)) branches
+        current = filter (\b -> checkArrival destination (head b)) branches -- all heads of these branches that have arrived
 
 
 -- | Depth-First Search
@@ -146,9 +149,10 @@ depthLimitedSearch destination next  branches d exploredList
 iterDeepSearch:: Node-> (Branch-> [Branch])-> Node-> Int-> Maybe Branch
 iterDeepSearch dest next initial d
     -- | trace "iterDeepSearch" False = undefined
-    | result == Nothing = iterDeepSearch dest next initial (d+1)
-    | otherwise = result
+    | result == Nothing = iterDeepSearch dest next initial (d+1) -- if the given depth is unsuccessful, try this again for deeper
+    | otherwise = result -- found result! lets go
     where
+        -- a depth limited search for the given depth
         result = depthLimitedSearch dest next [[initial]] d []
 
 -- a misunderstanding of iterDeepSearch where we try for a defined depth and then go level by level afterwards
@@ -189,16 +193,18 @@ bestFirstSearch dest next heuristic branches exploredList
     | otherwise = iter (nearest branches) exploredList
     where
         nearest :: [Branch] -> [Branch]
-        nearest = sortBy (\a b -> compare (heuristic $ head a) (heuristic $ head b))
+        nearest = sortBy (\a b -> compare (heuristic $ head a) (heuristic $ head b)) -- sorts by the heuristic applied to the each head
         
         iter :: [Branch] -> [Node] -> Maybe Branch
         iter branches explored
-            | checkArrival dest (head $ head branches) = Just (head branches)
+            | not $ null current = Just (head current)
             | not $ all (`elem` explored) nextHeads = iter nearestNext (nextHeads ++ explored)
             | otherwise = Nothing
             where
                 nearestNext = nearest (concatMap next branches)
                 nextHeads = map head nearestNext
+
+                current = filter (\b -> checkArrival dest (head b)) branches
 
 -- | A* Search
 -- The aStarSearch function is similar to the bestFirstSearch function
@@ -217,12 +223,14 @@ aStarSearch dest next heuristic cost branches exploredList
         
         iter :: [Branch] -> [Node] -> Maybe Branch
         iter branches explored
-            | checkArrival dest (head $ head branches) = Just (head branches)
+            | not $ null current = Just (head current)
             | not $ all (`elem` explored) nextHeads = iter nearestNext (nextHeads ++ explored)
             | otherwise = Nothing
             where
                 nearestNext = nearest (concatMap next branches)
                 nextHeads = map head nearestNext
+
+                current = filter (\b -> checkArrival dest (head b)) branches
 
 -- | The cost function calculates the current cost of a trace, where each movement from one state to another has a cost of 1.
 cost :: Branch-> Int
@@ -256,6 +264,7 @@ alphabeta :: Role -> Game -> Int
 alphabeta player game = fn [game] (2) (-2)
     where
         fn = if player == maxPlayer then maxV else minV
+
         maxV gs a b
             | terminal (head gs) && (length gs == 1) = eval (head gs)
             | otherwise = maxVLoop gs a b (-2)
